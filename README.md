@@ -1,3 +1,3 @@
 # Softbody Simulation
 
-The code is to simulate a softbody robots using Taichi
+The code is to simulate softbody robots using Taichi
