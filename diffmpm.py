@@ -48,9 +48,7 @@ actuation = scalar()
 actuation_omega = 20
 act_strength = 4
 
-
-@ti.layout
-def place():
+def allocate_fields():
     ti.root.dense(ti.ij, (n_actuators, n_sin_waves)).place(weights)
     ti.root.dense(ti.i, n_actuators).place(bias)
 
@@ -157,16 +155,16 @@ def grid_op():
             lsq = (normal**2).sum()
             if lsq > 0.5:
                 if ti.static(coeff < 0):
-                    v_out(0).val = 0
-                    v_out(1).val = 0
+                    v_out[0] = 0
+                    v_out[1] = 0
                 else:
                     lin = (v_out.transpose() @ normal)(0)
                     if lin < 0:
                         vit = v_out - lin * normal
                         lit = vit.norm() + 1e-10
                         if lit + coeff * lin <= 0:
-                            v_out(0).val = 0
-                            v_out(1).val = 0
+                            v_out[0] = 0
+                            v_out[1] = 0
                         else:
                             v_out = (1 + coeff * lin / lit) * vit
         if j > n_grid - bound and v_out[1] > 0:
@@ -234,7 +232,7 @@ def compute_loss():
     kinetic[None] = 0
 
 
-@ti.complex_kernel
+@ti.ad.grad_replaced
 def advance(s):
     clear_grid()
     compute_actuation(s)
@@ -244,7 +242,7 @@ def advance(s):
     #compute_kinetic(s)
 
 
-@ti.complex_kernel_grad(advance)
+@ti.ad.grad_for(advance)
 def advance_grad(s):
     #compute_kinetic.grad(s)
     clear_grid()
@@ -371,6 +369,7 @@ def main():
     scene = Scene()
     worm(scene)
     scene.finalize()
+    allocate_fields()
 
     for i in range(n_actuators):
         for j in range(n_sin_waves):
