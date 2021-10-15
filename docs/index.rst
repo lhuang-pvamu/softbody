@@ -10,7 +10,6 @@ Welcome to softbody's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   softbody.md
 
 Indices and tables
 ==================
