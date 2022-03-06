@@ -8,9 +8,14 @@ import torch.nn.functional as F
 
 from CA_Model import CA_Model
 
-def load_emoji(index, path="data/emoji.png"):
+def load_emoji(index, path="data/dog.png"):
     im = imageio.imread(path)
+    print(im.shape)
+    if im.shape[2] == 3:
+        im = np.concatenate([im, np.ones((40,40,1))*255], axis=2)
+    print(im.shape)
     emoji = np.array(im[:, index*40:(index+1)*40].astype(np.float32))
+
     emoji /= 255.0
     return emoji
 
@@ -19,6 +24,7 @@ def to_alpha(x):
 
 def to_rgb(x):
     # assume rgb premultiplied by alpha
+    print(x.shape)
     rgb, a = x[..., :3], to_alpha(x)
     return np.clip(1.0-a+rgb, 0, 0.9999)
 
@@ -32,8 +38,8 @@ def make_seed(shape, n_channels):
     seed[shape[0]//2, shape[1]//2, 3:] = 1.0
     return seed
 
-device = torch.device("cuda")
-model_path = "models/gen_1.model"
+device = torch.device("cpu")
+model_path = "models/gen_2.model"
 
 CHANNEL_N = 16        # Number of CA state channels
 TARGET_PADDING = 16   # Number of pixels used to pad the target image border

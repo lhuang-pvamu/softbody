@@ -7,7 +7,7 @@ ti.init(arch=ti.cpu)
 img_size = 100
 CHANNEL_N = 16
 CELL_FIRE_RATE = 0.5
-model_path = "models/gen_1.model"
+model_path = "models/gen_2.model"
 device = torch.device("cpu")
 
 def make_seed(shape, n_channels):
@@ -39,5 +39,6 @@ while gui.running:
         step+=1
 
     gui.set_image(to_rgb(output.detach().numpy()[0]))
-    gui.show()
+    #gui.show()
+    gui.show(f'output/{step:06d}.png')
 
