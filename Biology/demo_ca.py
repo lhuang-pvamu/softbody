@@ -18,6 +18,7 @@ def to_alpha(x):
     return np.clip(x[..., 3:4], 0, 0.9999)
 def to_rgb(x):
     # assume rgb premultiplied by alpha
+    x = np.rot90(x, k=1, axes=(1,0))
     rgb, a = x[..., :3], to_alpha(x)
     return np.clip(1.0-a+rgb, 0, 0.9999)
 

@@ -45,10 +45,10 @@ CHANNEL_N = 16        # Number of CA state channels
 TARGET_PADDING = 16   # Number of pixels used to pad the target image border
 TARGET_SIZE = 40
 
-lr = 2e-3
+lr = 1e-3
 lr_gamma = 0.9999
 betas = (0.5, 0.5)
-n_epoch = 80000
+n_epoch = 8000
 
 BATCH_SIZE = 4
 POOL_SIZE = 1024
