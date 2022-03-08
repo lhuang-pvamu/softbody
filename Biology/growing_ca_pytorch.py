@@ -6,7 +6,8 @@ import torch.nn as nn
 import torch.optim as opt
 import torch.nn.functional as F
 
-from CA_Model import CA_Model
+from lib.CA_Model import CA_Model
+from lib.utils_vis import SamplePool
 
 def load_emoji(index, path="data/dog.png"):
     im = imageio.imread(path)
@@ -38,23 +39,32 @@ def make_seed(shape, n_channels):
     seed[shape[0]//2, shape[1]//2, 3:] = 1.0
     return seed
 
-device = torch.device("cpu")
+DEVICE = "cpu"
+device = torch.device(DEVICE)
 model_path = "models/gen_2.model"
 
 CHANNEL_N = 16        # Number of CA state channels
 TARGET_PADDING = 16   # Number of pixels used to pad the target image border
 TARGET_SIZE = 40
 
-lr = 1e-3
+lr = 2e-3
 lr_gamma = 0.9999
 betas = (0.5, 0.5)
-n_epoch = 8000
+n_epoch = 2000
 
-BATCH_SIZE = 4
+BATCH_SIZE = 8
 POOL_SIZE = 1024
 CELL_FIRE_RATE = 0.5
 
 TARGET_EMOJI = 0
+
+EXPERIMENT_TYPE = "Persistent"
+EXPERIMENT_MAP = {"Growing":0, "Persistent":1, "Regenerating":2}
+EXPERIMENT_N = EXPERIMENT_MAP[EXPERIMENT_TYPE]
+
+USE_PATTERN_POOL = [0, 1, 1][EXPERIMENT_N]
+DAMAGE_N = [0, 0, 3][EXPERIMENT_N]  # Number of patterns to damage in a batch
+
 target_img = load_emoji(TARGET_EMOJI)
 plt.figure(figsize=(4,4))
 plt.imshow(to_rgb(target_img))
@@ -69,11 +79,11 @@ pad_target = torch.from_numpy(pad_target.astype(np.float32)).to(device)
 pad_target = pad_target.repeat(BATCH_SIZE,1,1,1)
 
 seed = make_seed((h, w), CHANNEL_N)
-# pool = SamplePool(x=np.repeat(seed[None, ...], POOL_SIZE, 0))
-# batch = pool.sample(BATCH_SIZE).x
+pool = SamplePool(x=np.repeat(seed[None, ...], POOL_SIZE, 0))
+batch = pool.sample(BATCH_SIZE).x
 
 ca = CA_Model(CHANNEL_N, CELL_FIRE_RATE, device).to(device)
-#ca.load_state_dict(torch.load(model_path))
+ca.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
 
 optimizer = opt.Adam(ca.parameters(), lr=lr, betas=betas)
 scheduler = opt.lr_scheduler.ExponentialLR(optimizer, lr_gamma)

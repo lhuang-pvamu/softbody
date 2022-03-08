@@ -1,6 +1,6 @@
 import numpy as np
 import taichi as ti
-from CA_Model import CA_Model
+from lib.CA_Model import CA_Model
 import torch
 
 ti.init(arch=ti.cpu)
